@@ -146,6 +146,12 @@ function(trip_file){
 ##sub header 2==================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+temp_save_list = qs::qread(
+  here("data", "texas_spatial_object_list.qs")
+)
+
+index_texas_omsids = temp_save_list$index_texas_omsids
+
 #script end=====================================================================
 
 
