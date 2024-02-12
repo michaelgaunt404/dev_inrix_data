@@ -35,17 +35,15 @@ library(tidyverse)
 #area to upload data with and to perform initial munging
 #please add test data here so that others may use/unit test these scripts
 
-data_location = "data/example_data/through"
+data_location = "C:/Users/gauntm/Documents/temp/week/trips_usa_tx_202208_wk4/date=2023-11-13/reportId=166942/v1/data/through"
 specifically = NULL
 latest = F
 
 file_list = here(data_location) %>%
   list.files() %>%
-  .[str_detect(., "parquet")] %>%
-  { if (!is.null(specifically)) (.) %>% .[str_detect(., specifically)] else .} %>%
-  { if (latest) .[parse_number(.) == max(parse_number(.))] else .}
+  .[str_detect(., "parquet")]
 
-file = file_list[4]
+file_list = file_list[1:10]
 
 temp_data = file_list %>%
   map(~{here(

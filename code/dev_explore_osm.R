@@ -44,10 +44,6 @@ texas = here(data_location
      ,"TX_INRIXNetwork_counties_no5or6.shp") %>%
 read_sf()
 
-
-
-
-
 #main header====================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -58,7 +54,6 @@ temp_data_trip$trajectories[[1]][["solution_segments"]][[1]] %>% glimpse()
 
 ##sub header 1==================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 boundary = mapedit::drawFeatures() %>%
   sf::st_transform(4326)
@@ -83,7 +78,6 @@ qs::qsave(
   temp_save_list
   ,here("data", "texas_spatial_object_list.qs")
 )
-
 
 
 ##sub header 2==================================================================
