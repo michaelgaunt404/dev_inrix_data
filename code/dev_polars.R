@@ -1,88 +1,66 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# This is script installs commonly used packages.
+#
+# By: mike gaunt, michael.gaunt@wsp.com
+#
+# README: [[insert brief readme here]]
+#-------- [[insert brief readme here]]
+#
+# *please use 80 character margins
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+#library set-up=================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(tidyverse)
 library(furrr)
-library(gauntlet)
+# library(gauntlet)
 library(arrow)
 library(data.table)
 library(here)
 library(progressr)
-
 library(polars)
 
-df = pl$DataFrame(
-  A = 1:5,
-  fruits = c("banana", "banana", "apple", "apple", "banana"),
-  B = 5:1,
-  cars = c("beetle", "audi", "beetle", "beetle", "beetle")
-)
+#path set-up====================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev
 
-# embarrassingly parallel execution & very expressive query language
-df$sort("fruits")$select(
-  "fruits",
-  "cars",
-  pl$lit("fruits")$alias("literal_string_fruits"),
-  pl$col("B")$filter(pl$col("cars") == "beetle")$sum(),
-  pl$col("A")$filter(pl$col("B") > 2)$sum()$over("cars")$alias("sum_A_by_cars"),
-  pl$col("A")$sum()$over("fruits")$alias("sum_A_by_fruits"),
-  pl$col("A")$reverse()$over("fruits")$alias("rev_A_by_fruits"),
-  pl$col("A")$sort_by("B")$over("fruits")$alias("sort_A_by_B_by_fruits")
-)
+#source helpers/utilities=======================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev
+
+#source data====================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev
+#area to upload data with and to perform initial munging
+#please add test data here so that others may use/unit test these scripts
 
 
-
-
+#basic how-to example_1=========================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#you only need tol look at this if you are unfamilir with polars
 write.csv(airquality, "airquality.csv", row.names = FALSE)
 pl$read_csv("airquality.csv")
-scanned = pl$scan_csv("airquality.csv")
 
-scanned$head(
+#lazy eval
+scanned = pl$scan_csv("airquality.csv")
+item = scanned$describe_plan()
+
+scanned_planned = scanned$head(
   3)$filter(
     pl$col("Wind") > 10
-  )$collect()
+  )
+
+scanned_planned$describe_optimized_plan()
+scanned_planned$describe_plan()
+scanned_planned$collect_in_background()
+#get data
+scanned_planned$collect()
 
 
-
-aq2 = pl$scan_parquet("./test/*.parquet")
-
-as_polars_df(airquality)$write_parquet("airquality_1.parquet")
-
-# eager version (okay)
-aq = pl$scan_parquet("./test/airquality_1.parquet")
-
-# lazy version (better)
-aq = pl$scan_parquet("airquality.parquet")
-aq$filter(
-  # pl$col("Month") >= 6
-  pl$col("Month")$is_in(c(6, 8))
-)$group_by(
-  "Month"
-)$agg(
-  pl$col(c("Ozone", "Temp"))$count()
-)$collect()
-
-
-
-length_of_dataframe <- 5e6
-
-data <- data.frame(
-  x = seq(1, length_of_dataframe)
-  ,y = 2 * seq(1, length_of_dataframe) + rnorm(length_of_dataframe, mean = 0, sd = length_of_dataframe*.2)
-  ,z = sample(letters, length_of_dataframe, replace = T)
-) %>%
-  mutate(model = rep(c("model_1", "model_2", "model_3", "model_4"), length_of_dataframe/4))
-
-
-arrow::write_parquet(data, "df_fake_5e6.parquet")
-aq = pl$scan_parquet("df_fake_5e6.parquet")
-aq$group_by(
-  "z"
-)$agg(
-  pl$col(c("y"))$count()
-)$collect()
-
-
-
-
+#basic how-to example_1=========================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 data_location = "C:/Users/gauntm/Documents/temp/week/trips_usa_tx_202208_wk4/date=2023-11-13/reportId=166942/v1/data/trajs"

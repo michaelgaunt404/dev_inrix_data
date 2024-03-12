@@ -29,6 +29,7 @@ library(polars)
 
 #object import==================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#processed texas link ids
 index_texas_omsids = here(
   "data/gis"
   ,"texas_spatial_object_list_all_entries.qs") %>%
@@ -36,86 +37,143 @@ index_texas_omsids = here(
   .[['index_texas_omsids']] %>%
   sort()
 
-data_location = "E:/010_projects/trips_usa_tx_202203_wk2/trajs"
-# data_location_write = here::here("data/extracted_traj/test_1")
-data_location_write = here::here("data/extracted_traj/trips_usa_tx_202203_wk2_part2")
+# data_location = "data/bench_mark_folder_sm" %>% here()
+data_location = "data/bench_mark_folder" %>% here()
+data_location_write = "data/benchmark_outputs/bm_small_local_to_local" %>% here()
 
-# data_location = "E:/010_projects/trips_usa_tx_202203_wk3/trajs"
-# data_location_write = here::here("data/extracted_traj/test_2")
-# data_location = "E:/010_projects/trips_usa_tx_202208_wk4/date=2023-11-13/reportId=166942/v1/data/trajs"
-# data_location_write = here::here("data/extracted_traj/test_3")
-# data_location = "E:/010_projects/trips_usa_tx_202210_wk4/trajs"
-# data_location_write = here::here("data/extracted_traj/trips_usa_tx_202210_wk4_part2")
-
-
-#path set-up====================================================================
+#processing options=============================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-limit = NA
-cores = 33
-batch_limit = 250
 
-files = list.files(data_location, pattern = "par") %>% here::here(data_location, .)
-# file_list_use = files[1:ifelse(is.na(limit), length(files), limit)]
-file_list_use = files[30001:ifelse(is.na(limit), length(files), limit)]
+limit = 300 #NA indicates no reduction in files
+# future::availableCores() #show cores
+cores = 30 #choose cores
+batch_limit = 250 #choose batch size - had been somewhat optimized but might need to be re optimized
 
-#test_1
+files = list.files(data_location, pattern = "par") %>% here::here(data_location, .) #raw files
+file_list_use = files[1:ifelse(is.na(limit), length(files), limit)] #reduced - if limit set
 
-temp_time_start_sub = Sys.time()
+#process_method_1===============================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#method opens and processing files and immediately saves out
 
-temp_extracted_trips =
-  temp_file_list_use %>%
-  furrr::future_map(
-    ~{
-      p()
+index_limit = seq(100, 1000, 100)
 
-      temp_extract =  arrow::read_parquet(.x)
+for (i in 1:length(index_limit)){
 
-      temp_pro = temp_extract %>%
-        .[, c('trip_id', 'device_id', 'provider_id', 'trajectories'
-              ,'trip_raw_distance_m', 'start_utc_ts', 'end_utc_ts'
-        )
-        ] %>%
-        rename(
-          trip_raw_distance_m_ttl = trip_raw_distance_m
-          ,start_utc_ts_ttl = start_utc_ts
-          ,end_utc_ts_ttl = end_utc_ts
-        ) %>%
-        unnest(cols = trajectories) %>%
-        unnest(cols = solution_segments)  %>%
-        .[,c('trip_id', 'device_id', 'provider_id'
-             # ,'trip_raw_distance_m_ttl', 'start_utc_ts_ttl', 'end_utc_ts_ttl'
-             ,'traj_idx', 'segment_id', 'segment_idx'
-             ,"speed_kph"
-             # ,"snap_count", "on_road_snap_count", "service_code"
-        )] %>%
-        mutate(
-          speed_kph = round(speed_kph, 0)
-          ,flag_border_link = case_when(
-            segment_id %in% index_texas_omsids ~ 1
-            ,T~0
-          )) %>%
-        group_by(trip_id) %>%
-        mutate(flag_ttl = case_when(
-          sum(flag_border_link)>0~T
-          ,T~F
-        )) %>%
-        ungroup()
+  limit = index_limit[i]
 
-      arrow::write_parquet(
-        temp_pro
-        ,here::here(
-          "data/benchmark_save_out"
-          ,str_glue("{gauntlet::strg_clean_datetime()}.parquet")
-        )
-      )
+  print(limit)
+
+  files = list.files(data_location, pattern = "par") %>% here::here(data_location, .) #raw files
+  file_list_use = files[1:ifelse(is.na(limit), length(files), limit)]
+
+
+  plan(multisession, workers = cores)
+
+  special_id = "individual_write_local_to_local"
+  time_id = gauntlet::strg_clean_datetime()
+
+
+  {
+    time_start = Sys.time()
+
+    progressr::with_progress({
+      p <- progressr::progressor(steps = length(file_list_use))
+
+      temp_extracted_trips =
+        file_list_use %>%
+        furrr::future_map(
+          ~{
+            p()
+
+            time_start_sub_process = Sys.time()
+
+            temp_extract =  arrow::read_parquet(.x)
+
+            time_read = Sys.time()
+
+            temp_pro = temp_extract %>%
+              .[, c('trip_id', 'device_id', 'provider_id', 'trajectories'
+                    ,'trip_raw_distance_m', 'start_utc_ts', 'end_utc_ts'
+              )
+              ] %>%
+              rename(
+                trip_raw_distance_m_ttl = trip_raw_distance_m
+                ,start_utc_ts_ttl = start_utc_ts
+                ,end_utc_ts_ttl = end_utc_ts
+              ) %>%
+              unnest(cols = trajectories) %>%
+              unnest(cols = solution_segments)  %>%
+              .[,c('trip_id', 'device_id', 'provider_id'
+                   ,'start_utc_ts_ttl', 'end_utc_ts_ttl'
+                   ,'traj_idx', 'segment_id', 'segment_idx'
+                   ,"speed_kph"
+                   # ,"snap_count", "on_road_snap_count", "service_code"
+              )] %>%
+              mutate(
+                speed_kph = round(speed_kph, 0)
+                ,flag_border_link = case_when(
+                  segment_id %in% index_texas_omsids ~ 1
+                  ,T~0
+                )) %>%
+              group_by(trip_id) %>%
+              mutate(flag_ttl = case_when(
+                sum(flag_border_link)>0~T
+                ,T~F
+              )) %>%
+              ungroup()
+
+            time_process = Sys.time()
+
+            arrow::write_parquet(
+              temp_pro
+              ,here::here(
+                data_location_write
+                ,str_glue("{gauntlet::strg_clean_datetime()}.parquet")
+              )
+            )
+
+            time_write = Sys.time()
+
+            arrow::write_parquet(
+              data.frame(
+                special_id
+                ,time_id
+                ,df_size = length(file_list_use), limit, cores, batch_limit
+                ,time_read = as.numeric(time_read - time_start_sub_process)
+                ,time_process = as.numeric(time_process - time_read)
+                ,time_write = as.numeric(time_write - time_process)
+              ), here::here(data_location_write, str_glue("{gauntlet::strg_clean_datetime()}_time_sub_process.parquet")))
+
+
+          })
 
     })
 
 
-temp_time_duration_sub_saveout = round(Sys.time()-temp_time_start_sub, 3)
+    total_time = round(Sys.time()-time_start, 3)
 
+    scanned = pl$scan_parquet(
+      here::here(data_location_write
+                 ,"*_time_sub_process.parquet")
 
+    )$collect() %>%
+      as.data.frame() %>%
+      mutate(total_time = total_time %>% as.numeric())
 
+    arrow::write_parquet(
+      scanned
+      ,here::here(
+        "data/benchmark_process_times"
+        ,str_glue("{special_id}_{time_id}_time_object.parquet")))
+
+    list.files(data_location_write) %>%
+      paste0(data_location_write, "/", .) %>%
+      file.remove()
+
+  }
+
+}
 
 #test_2
 
@@ -184,6 +242,87 @@ arrow::write_dataset(
 )
 
 
+
+
 temp_time_duration_sub = round(Sys.time()-temp_time_start_sub, 3)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#==================
+scanned = pl$read_parquet(
+  here::here(
+    "data/benchmark_process_times"
+    ,"*_time_object.parquet")) %>%
+  as.data.frame()
+
+scanned %>%
+  group_by(
+     df_size, limit, cores, batch_limit
+  ) %>%
+  summarise(across(starts_with("time"), mean))
+
+
+scanned %>%
+  select(
+    special_id, time_id, df_size, limit, cores, batch_limit
+    ,total_time
+  ) %>%
+  unique() %>%
+  ggplot(
+    aes(as.factor(df_size), df_size/total_time)
+  ) +
+  geom_boxplot()
+
+
+
+test = scanned %>%
+  select(!total_time) %>%
+  pivot_longer(
+    cols = c(time_read, time_process, time_write)
+  ) %>%
+  ggplot(
+    aes(as.factor(df_size), value, color = name )
+  ) +
+  geom_boxplot()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
