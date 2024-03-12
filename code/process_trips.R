@@ -116,24 +116,27 @@ process_trips_by_spatial_boundary = function(data_location
             p()
 
             tryCatch({
+
               #read data
               temp_data = here(
                 data_location
                 ,.x
               ) %>%
-                arrow::read_parquet()
+                arrow::read_parquet(
+                  # col_select = c('trip_id', 'device_id', 'provider_id', 'start_date'
+                  #               ,'start_lat', 'start_lon', 'end_lat', 'end_lon')
+                ) %>%
+                print()
+                # data.table::data.table() %>%
+                # .[,`:=`(geometry = paste0("LINESTRING (", start_lon, " ", start_lat, ",  ", end_lon, " ", end_lat, ")") %>%
+                #           as.character()
+                # )] %>%
+                # sf::st_as_sf(wkt = "geometry", crs = 4326) %>%
+                # sf::st_filter(boundary) %>%
+                # sf::st_drop_geometry()
 
-              #make WKT linestring and filter given boundary
-              temp_data = temp_data %>%
-                data.table::data.table() %>%
-                .[,.(trip_id, device_id, provider_id, start_date
-                     ,start_lat, start_lon, end_lat, end_lon)] %>%
-                .[,`:=`(geometry = paste0("LINESTRING (", start_lon, " ", start_lat, ",  ", end_lon, " ", end_lat, ")") %>%
-                          as.character()
-                )] %>%
-                sf::st_as_sf(wkt = "geometry", crs = 4326) %>%
-                sf::st_filter(boundary) %>%
-                sf::st_drop_geometry()
+              print("inside")
+
             },  error = function(e) {
               error_message <- paste("An error occurred:\n", e$message)
 
@@ -142,6 +145,9 @@ process_trips_by_spatial_boundary = function(data_location
             return(temp_data)
           })
     })
+
+    print("outside")
+
 
     large_dump_object[i] = temp_data
     temp_time_duration_loop = Sys.time()-temp_time_start_loop

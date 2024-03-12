@@ -204,9 +204,21 @@ temp_time_duration_batch = Sys.time()-temp_time_start
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 plan(multisession, workers = 6)
 
+
+index_reduced_trips = qs::qread(
+  here::here("data", "temp_extracted_trips_big.qs")
+) %>%
+  .$large_dump_object %>%
+  rbindlist() %>%
+  .$trip_id %>%
+  unique()
+
+
 temp_time_start = Sys.time()
 
-limit = 1000
+limit = 100
+
+x = file_list[1]
 
 with_progress({
   p <- progressor(steps = limit)
@@ -225,12 +237,14 @@ with_progress({
         tryCatch({
           temp_data = here(
             data_location
-            ,.x
+            ,x
           ) %>%
-            arrow::read_parquet() %>%
+            arrow::read_parquet(
+              col_select = c("trip_id", "device_id", "provider_id", "trajectories")
+            ) %>%
             data.table() %>%
-            .[trip_id %in% index_reduced_trips] %>% #prefiltering_Step
-            .[, .(trip_id, device_id, provider_id, trajectories)] %>%
+            # .[trip_id %in% index_reduced_trips] %>% #prefiltering_Step
+            # .[, .(trip_id, device_id, provider_id, trajectories)] %>%
             .[,.(ids =
 
                    tryCatch({
@@ -280,7 +294,9 @@ message(temp_time_duration_perFile)
 #script end=====================================================================
 
 
-
+temp_extracted_trajs_big.qs = qs::qread(
+  here::here("data", "temp_extracted_trajs_big.qs")
+)
 
 
 
