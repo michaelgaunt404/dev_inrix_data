@@ -6,3 +6,9 @@
 data/
 credentials/
 docs/
+
+*.parquet
+
+*.qs
+
+*.csv
