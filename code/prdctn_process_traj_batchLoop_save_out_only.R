@@ -38,13 +38,16 @@ index_texas_omsids = here(
   sort()
 
 # data_location = "data/bench_mark_folder_sm" %>% here()
-data_location = "data/bench_mark_folder" %>% here()
-data_location_write = "data/benchmark_outputs/bm_small_local_to_local" %>% here()
+# data_location = "data/bench_mark_folder" %>% here()
+# data_location = "//10.120.118.10/cadd3/inrix_data/bench_mark_folder"
+data_location = "//10.120.118.10/cadd3/inrix_data/trips_usa_tx_202202_wk2/date=2023-11-16/reportId=167124/v1/data/trajs"
+# data_location = "//10.120.118.10/cadd3/inrix_data/trips_usa_tx_202208_wk1/date=2023-11-13/reportId=166939/v1/data/trajs"
+data_location_write = "//10.120.118.10/cadd3/inrix_data/benchmark_outputs/bm_small_network_to_network"
 
 #processing options=============================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-limit = 300 #NA indicates no reduction in files
+limit = 1000 #NA indicates no reduction in files
 # future::availableCores() #show cores
 cores = 30 #choose cores
 batch_limit = 250 #choose batch size - had been somewhat optimized but might need to be re optimized
@@ -56,7 +59,10 @@ file_list_use = files[1:ifelse(is.na(limit), length(files), limit)] #reduced - i
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #method opens and processing files and immediately saves out
 
-index_limit = seq(100, 1000, 100)
+# index_limit = seq(100, 1000, 100)
+# index_limit = c(100, 200)
+
+index_limit = c(1000, 2000, 5000)
 
 for (i in 1:length(index_limit)){
 
@@ -67,12 +73,12 @@ for (i in 1:length(index_limit)){
   files = list.files(data_location, pattern = "par") %>% here::here(data_location, .) #raw files
   file_list_use = files[1:ifelse(is.na(limit), length(files), limit)]
 
+  print(length(file_list_use))
 
   plan(multisession, workers = cores)
 
-  special_id = "individual_write_local_to_local"
+  special_id = "individual_write_network_to_network_1B1"
   time_id = gauntlet::strg_clean_datetime()
-
 
   {
     time_start = Sys.time()
@@ -145,11 +151,9 @@ for (i in 1:length(index_limit)){
                 ,time_write = as.numeric(time_write - time_process)
               ), here::here(data_location_write, str_glue("{gauntlet::strg_clean_datetime()}_time_sub_process.parquet")))
 
-
           })
 
     })
-
 
     total_time = round(Sys.time()-time_start, 3)
 
@@ -164,7 +168,7 @@ for (i in 1:length(index_limit)){
     arrow::write_parquet(
       scanned
       ,here::here(
-        "data/benchmark_process_times"
+        "//10.120.118.10/cadd3/inrix_data/benchmark_process_times"
         ,str_glue("{special_id}_{time_id}_time_object.parquet")))
 
     list.files(data_location_write) %>%
@@ -175,7 +179,7 @@ for (i in 1:length(index_limit)){
 
 }
 
-#test_2
+#test_2-----
 
 {
 
@@ -270,45 +274,6 @@ temp_time_duration_sub = round(Sys.time()-temp_time_start_sub, 3)
 
 
 
-
-
-
-#==================
-scanned = pl$read_parquet(
-  here::here(
-    "data/benchmark_process_times"
-    ,"*_time_object.parquet")) %>%
-  as.data.frame()
-
-scanned %>%
-  group_by(
-     df_size, limit, cores, batch_limit
-  ) %>%
-  summarise(across(starts_with("time"), mean))
-
-
-scanned %>%
-  select(
-    special_id, time_id, df_size, limit, cores, batch_limit
-    ,total_time
-  ) %>%
-  unique() %>%
-  ggplot(
-    aes(as.factor(df_size), df_size/total_time)
-  ) +
-  geom_boxplot()
-
-
-
-test = scanned %>%
-  select(!total_time) %>%
-  pivot_longer(
-    cols = c(time_read, time_process, time_write)
-  ) %>%
-  ggplot(
-    aes(as.factor(df_size), value, color = name )
-  ) +
-  geom_boxplot()
 
 
 
