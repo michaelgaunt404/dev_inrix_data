@@ -60,8 +60,8 @@ file_list_use = files[1:ifelse(is.na(limit), length(files), limit)] #reduced - i
 #method opens and processing files and immediately saves out
 
 
-limit = 1000 #NA indicates no reduction in files
-cores = 50
+limit = NA #NA indicates no reduction in files
+cores = 60
 data_location = "//10.120.118.10/cadd3/inrix_data/trips_usa_tx_202202_wk2/date=2023-11-16/reportId=167124/v1/data/trajs"
 data_location_write_root_folder = "//10.120.118.10/cadd3/inrix_data/processed_data/"
 
@@ -92,14 +92,14 @@ plan(multisession, workers = cores)
 {
   time_start = Sys.time()
 
-  progressr::with_progress({
-    p <- progressr::progressor(steps = length(file_list_use))
+  # progressr::with_progress({
+    # p <- progressr::progressor(steps = length(file_list_use))
 
     temp_extracted_trips =
       file_list_use %>%
       furrr::future_map(
         ~{
-          p()
+          # p()
 
           x = .x
 
@@ -149,7 +149,7 @@ plan(multisession, workers = cores)
             temp_pro
             ,here::here(
               data_location_write_processed
-              ,str_glue("{data_week_pro}_{gauntlet::strg_clean_datetime()}.parquet")
+              ,str_glue("processed_{data_week_pro}_{gauntlet::strg_clean_datetime()}.parquet")
             )
           )
 
@@ -165,7 +165,7 @@ plan(multisession, workers = cores)
             temp_pro_small
             ,here::here(
               data_location_write_processed
-              ,str_glue("data_{data_week_pro}_{gauntlet::strg_clean_datetime()}.parquet")
+              ,str_glue("summary_data_{data_week_pro}_{gauntlet::strg_clean_datetime()}.parquet")
             )
           )
 
@@ -193,7 +193,7 @@ plan(multisession, workers = cores)
 
         })
 
-  })
+  # })
 
   arrow::write_parquet(
     data.frame(
@@ -205,10 +205,18 @@ plan(multisession, workers = cores)
       ,str_glue("run_end_object_{data_week_pro}_{gauntlet::strg_clean_datetime()}.parquet")))
 
 
-  list.files(data_location_write_processed) %>%
-    paste0(data_location_write_processed, "/", .) %>%
-    file.remove()
+  # list.files(data_location_write_processed) %>%
+  #   paste0(data_location_write_processed, "/", .) %>%
+  #   file.remove()
 
 }
+
+yolo = arrow::read_parquet(
+  here::here(
+    data_location_write_processed
+    ,"run_end_object_trips_usa_tx_202202_wk2_20240314_013833409281.parquet"))
+
+
+yolo
 
 
