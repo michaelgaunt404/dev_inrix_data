@@ -40,7 +40,6 @@ for (i in 1:1000){
 
 
       data.frame(
-
         folder = gsub(".*inrix_data/", "\\1", .x)
         ,file_count = .x %>%
           list.dirs(recursive = F) %>%
@@ -66,10 +65,7 @@ for (i in 1:1000){
   # filter(folder != "trips_usa_tx_202208_wk4" &
   #        folder != "trips_usa_tx_202208_wk3" &
   #         !str_detect(folder, "//1"))
-
   # Sys.sleep(30)
-
-
 
   download_diagnostic = df %>%
     arrange(folder, time_stamp) %>%
