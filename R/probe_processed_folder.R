@@ -42,6 +42,7 @@ probe_processed_folder = function(folder_location){
         ,tail(dt_files_process_diagnostic, 1)
       )
 
+      #output_#1
       df_file_info =
         bind_cols(
           dt_files_process_diagnostic_fl
@@ -55,13 +56,15 @@ probe_processed_folder = function(folder_location){
                ,files_per_hour = (ttl_files/duration) %>% gauntlet::dgt0())
 
       dt_files_process_diagnostic_sample = dt_files_process_diagnostic %>%
-        sample_n(500)
+        sample_n(
+          ifelse(nrow(dt_files_process_diagnostic)<=500
+                 ,nrow(dt_files_process_diagnostic)
+                 ,500))
 
       test =  here::here(folder_location
                          ,dt_files_process_diagnostic_sample$files)
 
-      # print(test)
-
+      #output_#2
       bolo = arrow::open_dataset(
         test
       ) %>%
@@ -96,12 +99,12 @@ probe_processed_folder = function(folder_location){
 
       return(
         list(
-          processed_files = dt_files_process_diagnostic
+          process_diagnostic_files = dt_files_process_diagnostic
           ,file_info = df_file_info
           ,processing_metics = bolo)
       )
     })
 
 
-  return(folder_perfromance_metics)
+  return(folder_perfromance_metics[[1]])
 }
