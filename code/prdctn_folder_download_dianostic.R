@@ -82,6 +82,13 @@ for (i in 1:1000){
       ,text = ~label, hoverinfo = "text"
     )
 
+  download_process_date_time = download_diagnostic %>%
+    mutate(label = str_glue("{folder}\nTotal Count: {file_count}\nDiff: {diff}\nTimestamp: {lubridate::as_datetime(time_stamp) %>% lubridate::ymd_hms()}")) %>%
+    plotly::plot_ly(
+      x = ~time_stamp, y = ~file_count,  split = ~folder, mode = 'lines+markers'
+      ,text = ~label, hoverinfo = "text"
+    )
+
   htmlwidgets::saveWidget(
     download_process
     ,here::here("//geoatfilpro1/cadd3/inrix_data/folder_download_dianostic", "folder_download_dianostic.html")
@@ -93,4 +100,5 @@ for (i in 1:1000){
 }
 
 
+download_diagnostic %>%
 
