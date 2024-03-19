@@ -20,8 +20,8 @@
 probe_processed_folder = function(folder_location){
   # folder_location = "//geoatfilpro1/cadd3/inrix_data/processed_data/trips_usa_tx_202202_wk2"
 
-  folder_perfromance_metics = c(
-    "process_diagnostic"
+    folder_perfromance_metics = c(
+    "dgnstc_"
     # "summary_data_trips"
     # "processed_trips"
     ) %>%
