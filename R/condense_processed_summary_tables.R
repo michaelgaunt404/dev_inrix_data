@@ -21,7 +21,11 @@
 #' @importFrom stringr str_detect
 #' @importFrom here here
 #' @export
-condense_processed_summary_tables = function(folder_location, cores){
+condense_processed_summary_tables = function(folder_location, cores, border_xing_table){
+
+  # border_xing_table = qs::qread(here::here("//geoatfilpro1/cadd3/inrix_data/gis/", "table_extracted_border_crossing_locations_20240318.qs"))
+  # folder_location = "//geoatfilpro1/cadd3/inrix_data/processed_data/trips_usa_tx_202202_wk4"
+  # cores = 60
 
   plan(multisession, workers = cores)
 
@@ -29,13 +33,13 @@ condense_processed_summary_tables = function(folder_location, cores){
     files = list.files(
       here::here(folder_location)
     )) %>%
-    .[str_detect(files, "summary"),] %>%
+    .[str_detect(files, "summary|smmry"),] %>%
     .[order(files)]
 
   total_files = nrow(dt_files)
-  message("Extraction started....")
   start = Sys.time()
-  print(start)
+
+  message(str_glue("{gauntlet::strg_make_space_2()}Extraction started.... {start}\nTotal number of files: {total_files}"))
 
   temp_extracted_trips =
     dt_files %>%
@@ -54,18 +58,26 @@ condense_processed_summary_tables = function(folder_location, cores){
 
           message(str_glue("{gauntlet::strg_make_space_2()}WARNING ---- An error occurred:\n{x}\nBad file......{gauntlet::strg_make_space_2(last = F)
 }"))
-
-
         })
-
 
       }) %>%
     rbindlist()
 
+  pro = temp_extracted_trips %>%
+    merge(border_xing_table %>% select(!flag_dupe)
+          ,by.x = "segment_id", by.y = "seg_id", all.x = T) %>%
+    arrange(trip_id, device_id, traj_idx, segment_idx) %>%
+    group_by(trip_id, device_id, traj_idx) %>%
+      mutate(flag_dir_subtrip_strt = first(flag_direction)
+             ,flag_dir_subtrip_end = last(flag_direction)) %>%
+      group_by(trip_id, device_id) %>%
+      mutate(flag_dir_trip_strt = first(flag_direction)
+             ,flag_dir_trip_end = last(flag_direction)) %>%
+    ungroup()
+
   end = Sys.time()
 
-  print(end)
-  message("Extraction ended....")
+  message(str_glue("Extraction ended at {end}....{gauntlet::strg_make_space_2(last = F)}"))
 
   return(temp_extracted_trips)
 
