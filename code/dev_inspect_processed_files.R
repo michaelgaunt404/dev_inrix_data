@@ -60,13 +60,18 @@ file_load_vector = qs::qread(
 
 #get_diagnostics_from_run=======================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-folder_location = "//geoatfilpro1/cadd3/inrix_data/processed_data/trips_usa_tx_202202_wk2"
 
 #this probes the processed folder
 #---output: list of elements detailing what has been processed
-probe_result = probe_processed_folder(
-  folder_location = folder_location
-)
+#---should probably use one listed below
+# folder_location = "//geoatfilpro1/cadd3/inrix_data/processed_data/trips_usa_tx_202202_wk2"
+# probe_result = probe_processed_folder(folder_location = folder_location)
+
+
+#programmatically_inspect
+probe_processed_folder_auto(
+  folder_root = "//geoatfilpro1/cadd3/inrix_data/processed_data"
+  ,sample_size = 500)
 
 #this opens up probe files given a vector
 #----useful when inspecting the last couple of probes to be written
