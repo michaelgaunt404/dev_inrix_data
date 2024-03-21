@@ -69,7 +69,7 @@ file_load_vector = qs::qread(
 
 
 #programmatically_inspect
-probe_processed_folder_auto(
+df_diagnostic = probe_processed_folder_auto(
   folder_root = "//geoatfilpro1/cadd3/inrix_data/processed_data"
   ,sample_size = 500)
 

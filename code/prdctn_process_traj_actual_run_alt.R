@@ -86,7 +86,10 @@ limit = NA #NA indicates no reduction in files
 cores = 60 #specify number of cars
 
 #specify IO locations
-data_location = "//10.120.118.10/cadd3/inrix_data/trips_usa_tx_202202_wk2/date=2023-11-16/reportId=167124/v1/data/trajs"
+# data_location = "//10.120.118.10/cadd3/inrix_data/trips_usa_tx_202202_wk2/date=2023-11-16/reportId=167124/v1/data/trajs"
+# data_location = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202208_wk1/date=2023-11-13/reportId=166939/v1/data/trajs"
+data_location = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202208_wk2/date=2023-11-13/reportId=166940/v1/data/trajs"
+# data_location = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202208_wk3/date=2023-11-13/reportId=166941/v1/data/trajs"
 data_location_write_root_folder = "//10.120.118.10/cadd3/inrix_data/processed_data/" #this should be root location - subfolders will be made
 
 #specify object containing border crossing locations
@@ -104,8 +107,8 @@ number_of_batches = 1
 
   data_week_pro = data_location %>%
     gsub(".*(trips_usa_tx_)", "\\1", .) %>%
-    gsub("\\/date.*", "\\1", .) %>%
-    paste0(., "_mg_2")
+    gsub("\\/date.*", "\\1", .) #%>%
+    # paste0(., "_mg_2")
 
   data_location_write_processed = paste0(data_location_write_root_folder_pro, "/", data_week_pro)
 
