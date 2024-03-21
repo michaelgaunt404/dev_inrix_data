@@ -3,6 +3,7 @@
 #' This function allows the user to probe a processed data folder. The folder path must be specified and should be of full length. The input parameter is called \code{folder_location}.
 #'
 #' @param folder_location The path to the processed data folder.
+#' @param sample_size Integer indicating how many files to sample for speed metrics - default is 500.
 #' @return A list containing performance metrics for each of the *process_diagnostic.* output file types
 #' @details The function outputs three main components for each file type:
 #'   \itemize{
@@ -17,11 +18,12 @@
 #' @export
 #'
 #'
-probe_processed_folder = function(folder_location){
+probe_processed_folder = function(folder_location
+                                  ,sample_size = 500){
   # folder_location = "//geoatfilpro1/cadd3/inrix_data/processed_data/trips_usa_tx_202202_wk2"
 
-  folder_perfromance_metics = c(
-    "process_diagnostic"
+    folder_perfromance_metics = c(
+    "dgnstc_"
     # "summary_data_trips"
     # "processed_trips"
     ) %>%
@@ -57,9 +59,9 @@ probe_processed_folder = function(folder_location){
 
       dt_files_process_diagnostic_sample = dt_files_process_diagnostic %>%
         sample_n(
-          ifelse(nrow(dt_files_process_diagnostic)<=500
+          ifelse(nrow(dt_files_process_diagnostic)<=sample_size
                  ,nrow(dt_files_process_diagnostic)
-                 ,500))
+                 ,sample_size))
 
       test =  here::here(folder_location
                          ,dt_files_process_diagnostic_sample$files)

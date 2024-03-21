@@ -92,7 +92,7 @@ data_location_write_root_folder = "//10.120.118.10/cadd3/inrix_data/processed_da
 #specify object containing border crossing locations
 osm_match_links = index_texas_omsids_pro
 
-number_of_batches = 10
+number_of_batches = 1
 
 {
   #everything within this bracket should be automatically completed
@@ -136,9 +136,6 @@ number_of_batches = 10
       ,"file_load_vector.qs"
     )
   )
-
-  print(length(file_list_use))
-
   plan(multisession, workers = cores)
 }
 # special_id = "individual_write_network_to_network_1B1"
@@ -158,11 +155,11 @@ number_of_batches = 10
     message(str_glue("Containing {length(file_list_use_batch)} files...."))
 
 
-    temp_extracted_trips =
+    # temp_extracted_trips =
       file_list_use_batch %>%
+      # .[1:5000] %>%
       furrr::future_map(
         ~{
-          # p()
 
           x = .x
 
@@ -266,9 +263,20 @@ number_of_batches = 10
 
           }
 
-        })
+          # sort( sapply(ls(), function(x){object.size(get(x))})) %>% data.frame(file_size = round(./1000, 0)) %>% print()
 
-    gc()
+          rm(temp_pro)
+          rm(temp_extract)
+          rm(temp_pro_small)
+
+          # if (runif(1, 0, 1) < .01){
+            gc()
+          # }
+
+          # sort( sapply(ls(), function(x){object.size(get(x))})) %>% data.frame(file_size = round(./1000, 0)) %>% print()
+
+
+        })
 
   }
 
