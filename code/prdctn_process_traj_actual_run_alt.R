@@ -228,6 +228,11 @@ number_of_batches = 1
 
           time_write = Sys.time()
 
+          #make summary table----
+          #note: do to parallel processing issues we cannot perform device_id based trip chaining
+          #----- only can extract trips that cross
+          #note: i was going to elect to add time in this table but this would require reprocessing
+          #----- time can be added with merge on trips
           temp_pro_small = temp_pro %>%
             filter(flag_border_link == 1) %>%
             select(trip_id, device_id, file, folder, traj_idx, segment_id, segment_idx) %>%
