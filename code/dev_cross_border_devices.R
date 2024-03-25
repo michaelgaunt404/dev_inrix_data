@@ -50,13 +50,21 @@ get_device_OD_for_summary_tables = function(processed_folder_location){
     }
 
     print("combine the trips dataframe")
-    df_combinedtips <- do.call(rbind, dataframes)
-    df_combinedtips <- df_combinedtips[order(df_combinedtips$device_id, df_combinedtips$start_date), ]
+    df_combinedtrips <- do.call(rbind, dataframes)
+
+    df_combinedtrips <- left_join(df_combinedtrips,df_summary,by="trip_id") %>% .[,c("trip_id","device_id.x","start_date","end_date","start_lat.x","start_lon.x" ,"end_lat.x","end_lon.x","CROSS_NM","flag_seq")]
+
+    df_combinedtrips <- df_combinedtrips[order(df_combinedtrips$device_id.x, df_combinedtrips$start_date), ]
+
+    colnames(df_combinedtrips) <- c("trip_id","device_id.x","start_date","end_date","start_lat","start_lon","end_lat","end_lon" ,"segment_id","flag_direction","CROSS_NM","flag_seq")
+
+    df_combinedtrips <- df_combinedtrips[, !(names(df_combinedtrips) %in% c("segment_id", "flag_direction"))] %>% unique()
 
 
-    arrow::write_parquet(df_combinedtips,here::here(processed_folder_location, "trips_device_od.parquet"))
+    arrow::write_parquet(df_combinedtrips,here::here(processed_folder_location, "trips_device_od.parquet"))
 
   }
+
 
 }
 
@@ -68,7 +76,9 @@ data_processed_weeks = list.files(data_processed_location) %>% here::here(data_p
 
 for (data_processed_week in  data_processed_weeks) {
   print(data_processed_week)
-  get_device_OD_for_summary_tables(data_processed_file)
+  if(!grepl(paste0("trips_usa_tx_202202_wk2", "$"), data_processed_week)){
+    get_device_OD_for_summary_tables(data_processed_week)
+  }
 }
 
 
