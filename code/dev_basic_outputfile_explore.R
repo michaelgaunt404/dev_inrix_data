@@ -1,13 +1,12 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# This is script benchmarks time to process and save out traj data
+# This is script explores spatial object for facility locations.
 #
 # By: mike gaunt, michael.gaunt@wsp.com
 #
-# README: explodes and then saves out traj files
-#-------- benchmarks two methods - both using future_map
-#-------- one saves as each item is batched
-#-------- other saves after processing batch
+# README: from sebastian
+#-------- CSV of spatial object
+#-------- for freight facilities
 #
 # *please use 80 character margins
 #
@@ -24,13 +23,21 @@ library(data.table)
 library(here)
 library(progressr)
 library(polars)
+library(sf)
 
 #raw_files_from_inrix===========================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #trips_example
-file = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202202_wk2/date=2023-11-16/reportId=167124/v1/data/trips/part-00000-42810778-5dd1-4dd7-bd77-62af98897d92-c000.gz.parquet"
-df = arrow::read_parquet(file)
+folder = "//geoatfilpro1/cadd3/inrix_data/gis"
+file = "Texas_Emp2023_freight.csv"
+
+df = data.table::fread(
+  here::here(
+    folder
+    ,file
+  )
+)
 
 #out_put_files==================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
