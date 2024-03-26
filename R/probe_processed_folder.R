@@ -22,13 +22,13 @@ probe_processed_folder = function(folder_location
                                   ,sample_size = 500){
   # folder_location = "//geoatfilpro1/cadd3/inrix_data/processed_data/trips_usa_tx_202202_wk2"
 
-    folder_perfromance_metics = c(
-    "dgnstc_"
-    # "summary_data_trips"
-    # "processed_trips"
-    ) %>%
-    map(~{
-      x = .x
+    # folder_perfromance_metics = c(
+    # "dgnstc_"
+    # # "summary_data_trips"
+    # # "processed_trips"
+    # ) %>%
+    # map(~{
+      # x = .x
 
       dt_files = data.table(
         files = list.files(
@@ -36,7 +36,7 @@ probe_processed_folder = function(folder_location
         ))
 
       dt_files_process_diagnostic = dt_files %>%
-        .[str_detect(files, x),] %>%
+        .[str_detect(files, "dgnstc_"),] %>%
         .[order(files)]
 
       dt_files_process_diagnostic_fl = bind_rows(
@@ -99,14 +99,14 @@ probe_processed_folder = function(folder_location
         separate(col = name, sep = "_x", into = c("col", "metric")) %>%
         pivot_wider(values_from = value, names_from = col)
 
-      return(
-        list(
+      # return(
+        temp = list(
           process_diagnostic_files = dt_files_process_diagnostic
           ,file_info = df_file_info
           ,processing_metics = bolo)
-      )
-    })
+      # )
+    # })
 
 
-  return(folder_perfromance_metics[[1]])
+  return(temp)
 }

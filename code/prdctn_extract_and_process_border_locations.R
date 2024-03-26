@@ -5,7 +5,7 @@
 # By: mike gaunt, michael.gaunt@wsp.com
 #
 # README: uses a fair amount of outside data objects for processing
-#-------- [[insert brief readme here]]
+#-------- this is the most up to date version
 #
 # *please use 80 character margins
 #
