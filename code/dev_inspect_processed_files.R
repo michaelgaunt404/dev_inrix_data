@@ -55,7 +55,7 @@ file_load_vector = qs::qread(
     ,"file_load_vector.qs"
   )
 ) %>%
-  mutate(file = gsub(".*trajs/", "\\1", file))
+  mutate(file = gsub(".*trajs/", "/\1", file))
 
 
 #get_diagnostics_from_run=======================================================
@@ -65,12 +65,24 @@ df_diagnostic = probe_processed_folder_auto(
   folder_root = "//geoatfilpro1/cadd3/inrix_data/processed_data"
   ,sample_size = 10)
 
+for (i in 1:10){
 
-plot = plot_processing_rates(
-  folder_root = "//geoatfilpro1/cadd3/inrix_data/processed_data"
-  ,sample_size = 1000
-)
+  plot = plot_processing_rates(
+    folder_root = "//geoatfilpro1/cadd3/inrix_data/processed_data"
+    ,sample_size = 200
+  )
 
+  htmlwidgets::saveWidget(
+    plot
+    ,here::here(
+      "//geoatfilpro1/cadd3/inrix_data/folder_download_dianostic"
+      ,"processing_rates_diagnostic_plot.html"
+    )
+  )
+
+  print(Sys.time())
+  Sys.sleep((5*60))
+}
 
 #get/condense_processed_summary_tables==========================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
