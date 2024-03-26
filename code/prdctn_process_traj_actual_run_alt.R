@@ -46,8 +46,11 @@ index_texas_omsids_pro = c(
 # data_location = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202208_wk2/date=2023-11-13/reportId=166940/v1/data/trajs"
 # data_location = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202208_wk3/date=2023-11-13/reportId=166941/v1/data/trajs"
 
+# data_location = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202202_wk3/date=2023-11-16/reportId=167129/v1/data/trajs"
+# data_location = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202202_wk1/date=2023-11-14/reportId=166997/v1/data/trajs"
+
 #this may change sometimes
-folder_suffix = "_testmg"
+folder_suffix = NA
 
 #these imnputs should not change that much
 {
@@ -70,13 +73,18 @@ process_trajectory_files(
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 data_location = "//geoatfilpro1/cadd3/inrix_data/trips_usa_tx_202208_wk1/date=2023-11-13/reportId=166939/v1/data/trajs"
 
+df_diagnostic = probe_processed_folder_auto(
+  folder_root = "//geoatfilpro1/cadd3/inrix_data/processed_data"
+  ,sample_size = 10)
 
 df_out_standing = df_diagnostic %>%
   select(files:pct_prcssed) %>%
-  unique() %>%
-  filter(pct_prcssed < .90)
+  unique()
 
-index = df_out_standing[1][["files"]]
+index = df_out_standing %>%
+  filter(pct_prcssed < .90) %>%
+  .[1,] %>%
+  .[["files"]]
 
 data_location_root = "//geoatfilpro1/cadd3/inrix_data/"
 
