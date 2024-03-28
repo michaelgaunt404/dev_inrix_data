@@ -68,11 +68,9 @@ df_diagnostic = probe_processed_folder_auto(
 for (i in 1:10){
 
   plot = plot_processing_rates(
-    folder_root = "//geoatfilpro1/cadd3/inrix_data/processed_data"
-    ,sample_size = 200
-  )
+    folder_root = "//geoatfilpro1/cadd3/inrix_data/processed_data")
 
-  htmlwidgets::saveWidget(
+  htmltools::save_html(
     plot
     ,here::here(
       "//geoatfilpro1/cadd3/inrix_data/folder_download_dianostic"
